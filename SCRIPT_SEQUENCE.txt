@@ -1,0 +1,90 @@
+
+*** to compute 12-month running means and anomalies from the soil moisture data***
+CESM-LE-H2OSOIL_RunningMeans_Anomalies_1920-2100.ncl
+GFDLCM3-LE-SOILM_RunningMeans_Anomalies_1920-2100.ncl
+
+
+*** to plot Figure 1 ***
+Soilm_MeansStddevs_CESMvsGFDLCM3.ncl
+
+
+*** to compute 12-month running means from SST data ***
+CESM-LE-SST_RunningMeans_1920-2100.ncl
+GFDLCM3-LE-SST_RunningMeans_1920-2100.ncl
+
+
+*** to plot Figure 2 ***
+SST_Nino34_MeansStddevs_30yrShifts_CESMvsGFDLCM3.ncl
+
+
+*** to read Matt's principal component files and save it all into a single netcdf file (which is used later on) ***
+CESM-LE_process_PacificEOF_timeseries.ncl
+GFDLCM3-LE_process_PacificEOF_timeseries.ncl
+
+
+*** to compute the three simple linear regression models at each grid point over North America ***
+** for soil moisture **
+CESM-LE-H2OSOIL_Regress_MemoryENSO_30yrs.ncl
+GFDLCM3-LE-SOILM_Regress_MemoryENSO_30yrs.ncl
+** for precipitation **
+CESM-LE-PRECT_Regress_MemoryENSO_30yrs.ncl
+GFDLCM3-LE-PRECT_Regress_MemoryENSO_30yrs.ncl
+
+
+*** to plot the coefficients, the actual skill (Figure 3), and the predicted skill maps ***
+** for soil moisture **
+CESM-LE-H2OSOIL_Regress_MemoryENSO_plot_coefs_actskill.ncl
+GFDLCM3-LE-SOILM_Regress_MemoryENSO_plot_coefs_actskill.ncl
+** for precipitation (coeffs only) **
+CESM-LE-PRECT_Regress_MemoryENSO_plot_coefs.ncl
+GFDLCM3-LE-PRECT_Regress_MemoryENSO_plot_coefs.ncl
+
+
+*** to plot Figure 4, the signal to noise maps ***
+Soilm_RegMemoryENSO_plot_sig2noise_maps.ncl
+
+
+*** to compute the three simple linear regression models at each region ***
+GFDLCM3-LE-SOILM_Regress_MemoryENSO_Region_30yrs.ncl
+CESM-LE-H2OSOIL_Regress_MemoryENSO_Region_30yrs.ncl
+
+
+*** to plot Figure 5, the signal to noise barcharts ***
+Soilm_RegMemoryENSO_plot_sig2noise_region_barcharts.ncl
+
+
+*** to compute the CDFs of droughts and pluvials, by region ***
+CESM-LE-H2OSOIL_Region_EventSeqs_OctSepAnnualMeans_30yrs.ncl
+GFDLCM3-LE-SOILM_Region_EventSeqs_OctSepAnnualMeans_30yrs.ncl
+
+
+*** to plot Figure 6 ***
+SoilmExtremes_plot_CDFtails_CESMvsGFDLCM3_2regions_noCDFinsets_v2.ncl
+** v22 is the corrected version **
+SoilmExtremes_plot_CDFtails_CESMvsGFDLCM3_2regions_noCDFinsets_v22.ncl
+
+
+*** to plot drought/pluvial event CDFs as supplementary figures (1 figure per event type per region) ***
+SoilmExtremes_plot_CDFs_ModelSyntheticCI.ncl
+SoilmExtremes_plot_CDFs_ModelModelCI.ncl
+
+
+*** to compute 12-month running means and anomalies from the precip data***
+CESM-LE-PRECT_RunningMeans_Anomalies_1920-2100.ncl
+GFDLCM3-LE-PRECT_RunningMeans_Anomalies_1920-2100.ncl
+
+
+*** to plot Figure S1 ***
+Precip_MeansStddevs_CESMvsGFDLCM3.ncl
+
+
+*** to plot correlations PDSI vs soil moisture ***
+CESM-LE-PDSI-H2OSOIL_30yrCorrelationPatterns.ncl
+
+
+*** to extract time series for Matt to do spectra analyses ***
+extract_CESM_timeseries_4Matt.ncl
+extract_GFDLCM3_timeseries_4Matt.ncl
+
+
+
