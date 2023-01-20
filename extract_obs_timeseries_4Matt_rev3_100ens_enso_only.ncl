@@ -1,0 +1,172 @@
+  random_setallseed(36454749,10494848)
+
+  url = "http://www.esrl.noaa.gov/psd/thredds/dodsC//Projects/SERDP_regimeshifts/data/"
+
+  dir = url+"CESM-LE/lnd/postprocessed/"
+
+  dirout = "/glade/work/kumar34/hydroclimate_ncc/"
+
+  dirIn = "/glade/work/kumar34/hydroclimate_ncc/"
+ 
+  nyrp = 30
+ 
+  nEns = 100
+  xEns_yr = floor(random_uniform(1, 43, nEns))   ; there are 72 years of data; and 40 ensembles are created 
+                                                 ; by rnadomally selecting the first year (1 to 42) and adding 30 years to that
+  region = (/"Southwest","Southeast", "CanadianPlains_rev1"/)
+  nrgs = dimsizes(region)
+
+  latS = (/30.,25.,49./)
+  latN = (/40.,35.,60./)
+  lonW = (/239.,265.,248./)
+  lonE = (/252.,282.,263./)
+  
+    ensi = ispan(1,100,1)
+    nEns = dimsizes(ensi)
+ 
+    nps = 1 
+    ntim = nyrp - 1 ; -1 because by smoothing enso we lose one year
+
+
+   sm_ens = new((/nEns, ntim/), "float", -9999.0)
+   enso_ens = sm_ens
+   error_ens = sm_ens
+  
+   ;do r = 0, nrgs-1
+    do r = 0, nrgs-1 
+
+      random_setallseed(36454749,10494848)
+
+      filereg = dirIn+"NorthAmerica_obs_enso_h2osoi_regression_memoryENSO_5yrout_smnodt_noocdt_final_era5_1950_2021_"+region(r)+"_allER.nc"
+      fr = addfile(filereg,"r")
+
+      ;print(fr)
+
+
+      sm_ens = new((/nEns, ntim/), "float", -9999.0)
+      enso_ens = sm_ens
+      error_ens = sm_ens
+
+
+      do i_ens = 0, nEns-1
+     
+       ;filereg = dirIn+"NorthAmerica_obs_enso_h2osoi_regression_memoryENSO_5yrout_smnodt_noocdt_final_era5_1950_2021_"+region(r)+".nc"
+       ;fr = addfile(filereg,"r")
+ 
+       st1 = toint((xEns_yr(i_ens)-1)*12)
+       end1 = st1 + 359
+       ;print(st1)
+       ;print(end1)
+       soilm := fr->sm_anom(st1:end1)
+     
+       grabAnnual = ispan(14,nyrp*12-1,12) ; but because of enso missing data we skip the first year
+       soilm := soilm(time|grabAnnual)
+
+       enso := fr->enso(st1:end1)
+       enso := enso(time|grabAnnual)
+    
+     
+       errors := fr->errorE(st1:end1)
+       errors := errors(time|grabAnnual)
+    
+       sm_ens(i_ens, :) = soilm
+       enso_ens(i_ens, :) = enso
+       error_ens(i_ens, :) = errors
+         
+    end do
+ 
+    alfa = fr->coefs_avg(2,0) ; soil memory coefficients for Memory+ENSO model
+    alfa = (/0.0/)
+    beta = fr->coefs_avg(1,1) ; enso coefficients for ENSO model
+          
+
+
+    alfa_ps = fr->coefs(2, :, 0)    ; ps are 12 different time period when coefficeints were calculated
+    alfa_ps = (/0.0/)
+    beta_ps = fr->coefs(1, :, 1)
+        
+
+
+
+    soilm := sm_ens
+    enso  := enso_ens
+    errors := error_ens
+   
+  ;;  erravg  = dim_avg_n(ndtooned(errors), 0) 
+  ;;  errstdv = dim_stddev_n(ndtooned(errors), 0)
+
+  ;; randnorm = random_normal(erravg,errstdv,dimsizes(ndtooned(errors)))
+  ;; kstest = kolsm2_n(ndtooned(errors),randnorm,0)
+  ;; if(kstest.gt.0.05) then
+  ;;     		print_table([/kstest,": errors are normally distributed"/],"%4.2f %s")
+  ;; else
+  ;;     		print_table([/kstest,": errors are NOT normally distributed"/],"%4.2f %s")
+  ;; end if
+
+  grabAnnual1 = ispan(14,864-1,12)
+
+  errors2 := fr->errorE
+
+  errors1 := errors2(time|grabAnnual1)
+   
+   erravg  := dim_avg_n(errors1, 0)
+ 
+   errstdv := dim_stddev_n(errors1, 0)
+
+   randnorm := random_normal(erravg,errstdv,dimsizes(errors1))
+
+   kstest := kolsm2_n(errors1,randnorm,0)
+
+   if(kstest.gt.0.05) then
+     print_table([/kstest,": errors are normally distributed"/],"%15.10f %s")
+   else
+     print_table([/kstest,": errors are NOT normally distributed"/],"%15.10f %s")
+   end if
+
+      
+   nit = 1000
+   
+   ens_sample = new((/nit,nEns/),"integer")
+      
+   do b = 0,nit-1
+       sample = toint(random_uniform(0,nEns,nEns))
+       ens_sample(b,:) = sample
+       delete(sample)
+   end do
+
+   soilm_synt := new((/nit,nEns,ntim/),"float",soilm@_FillValue)
+   randerr := random_normal(erravg,errstdv,(/nit,nEns,ntim/))
+   randSM0 := random_normal(0,1,(/nit,nEns/))
+   
+   do i = 0,nit-1
+      ps_ind = toint(random_uniform(0, 12, 1))
+      alfa = (/alfa_ps(ps_ind)/)
+      beta = (/beta_ps(ps_ind)/) 
+       do e = 0,nEns-1
+         em = ens_sample(i,e)
+         sm0 = randSM0(i,e)
+         do t = 0,ntim-1
+            soilm_synt(i,e,t) = alfa*sm0 + beta*enso(em,t) + randerr(i,e,t)
+            sm0 = (/soilm_synt(i,e,t)/)
+         end do
+       end do
+   end do
+  
+   ;read in original soil moisture anomalies to get stddev that was used to standardize before regression 
+   smstdv := fr->sm_std
+
+   ; use sm stddev to unstandardize soil moisture anomalies (both original and synthetic)
+   soilm = soilm*smstdv
+   soilm_synt = soilm_synt*smstdv
+         
+   ; save to netcdf
+   outfile = dirout+"ERA5_obs_100ens_30yr_TimeSeries_"+region(r)+"_RAB_enso_only.nc"
+   system("/bin/rm -f "+outfile)
+   ncdf = addfile(outfile,"c")
+   ncdf->soilm = soilm
+   ncdf->synt_soilm = soilm_synt
+
+  delete(fr)
+
+ end do
+ 
